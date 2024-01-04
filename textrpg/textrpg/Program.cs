@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace textrpg
 {
@@ -91,7 +92,7 @@ namespace textrpg
 
                 for (int i=0; i<dataMax; i++ )
                 {
-                    if (InvenList[i].InvenE == "E")
+                    if (InvenEquip[i] == "E")
                     {
                         if (InvenList[i].InvenAtt > 0)
                         {
@@ -166,29 +167,28 @@ namespace textrpg
             public float InvenDef_extra = 0;
             public float InvenHea_extra = 0;
             public int dataMax = 0;
+            public int typeD_count = 0;
+            public int typeW_count = 0;
+            public string[] InvenEquip= new string[50];
             public struct Inven_Struct
             {
-                public string InvenE;
                 public string InvenName;
+                public char InvenType;
                 public float InvenAtt;
                 public float InvenDef;
                 public float InvenHea;
                 public string InvenInfo;
 
-                public Inven_Struct(string a, string b, float c, float d, float e, string f)
+                public Inven_Struct(string a, char b, float c, float d, float e, string f)
                 {
-                    InvenE = a;
-                    InvenName = b;
+                    InvenName = a;
+                    InvenType = b;
                     InvenAtt = c;
                     InvenDef = d;
                     InvenHea = e;
                     InvenInfo = f;
                 }
 
-                public void changeE(string a)
-                {
-                    InvenE = a;
-                }
 
             }
 
@@ -203,9 +203,10 @@ namespace textrpg
             {
                 for (int i = 0; i < ItemMax; i++)
                 {
-                    if (StoreList[i].Purchased == true)
+                    if (Purchase[i] == true)
                     {
-                        InvenList.Add(new Inven_Struct(null, StoreList[i].ItemName, StoreList[i].ItemAtt, StoreList[i].ItemDef, StoreList[i].ItemHea, StoreList[i].ItemInfo));
+                        InvenList.Add(new Inven_Struct(StoreList[i].ItemName,StoreList[i].ItemType, StoreList[i].ItemAtt, StoreList[i].ItemDef, StoreList[i].ItemHea, StoreList[i].ItemInfo));
+                        InvenEquip[dataMax] = null;
                         dataMax++;
                     }
                 }
@@ -213,8 +214,9 @@ namespace textrpg
 
             public void AddLast(int numb)
             {
-                InvenList.Add(new Inven_Struct(null, StoreList[numb-1].ItemName, StoreList[numb - 1].ItemAtt, StoreList[numb - 1].ItemDef, StoreList[numb - 1].ItemHea, StoreList[numb - 1].ItemInfo));
+                InvenList.Add(new Inven_Struct(StoreList[numb-1].ItemName, StoreList[numb-1].ItemType, StoreList[numb - 1].ItemAtt, StoreList[numb - 1].ItemDef, StoreList[numb - 1].ItemHea, StoreList[numb - 1].ItemInfo));
                 dataMax++;
+                InvenEquip[dataMax - 1] = null;
             }
 
             public void MinusLast(int numb)
@@ -230,6 +232,12 @@ namespace textrpg
                 }
 
                 InvenList.Remove(InvenList[check]);
+                InvenEquip[check] = null;
+
+                for(int j=check; j<dataMax-1; j++)
+                {
+                    InvenEquip[check] = InvenEquip[check+1];
+                }
                 dataMax--;
             }
 
@@ -246,7 +254,7 @@ namespace textrpg
                         break;
                     }
 
-                    Console.Write($"-[{InvenList[i].InvenE}]{InvenList[i].InvenName}\t|");
+                    Console.Write($"-[{InvenEquip[i]}]{InvenList[i].InvenName}\t|");
                     if (InvenList[i].InvenAtt >0)
                     {
                         Console.Write($"공격력 +{InvenList[i].InvenAtt}|");
@@ -310,7 +318,7 @@ namespace textrpg
                         break;
                     }
 
-                    Console.Write($"-{i + 1} [{InvenList[i].InvenE}]{InvenList[i].InvenName}\t|");
+                    Console.Write($"-{i + 1} [{InvenEquip[i]}]{InvenList[i].InvenName}\t|");
                     if (InvenList[i].InvenAtt > 0)
                     {
                         Console.Write($"공격력 +{InvenList[i].InvenAtt}|");
@@ -360,13 +368,13 @@ namespace textrpg
 
             public int InvenSelect()
             {
-                int exitNumb;
+                int exitNumb=9999;
 
                 string exitcode = Console.ReadLine();
 
                 if (int.TryParse(exitcode, out exitNumb))
                 {
-                    if (exitNumb == 2)
+                    if (exitNumb == 0)
                     {
                         Console.Clear();
                         return exitNumb;
@@ -379,13 +387,13 @@ namespace textrpg
                     else
                     {
                         Console.Clear();
-                        return 0;
+                        return 9999;
                     }
                 }
                 else
                 {
                     Console.Clear();
-                    return 0;
+                    return 9999;
                 }
 
             }
@@ -405,20 +413,54 @@ namespace textrpg
                     }
                     else
                     {
-                        if(exitNumb>dataMax)
+                        if(exitNumb>dataMax || exitNumb<0)
                         {
                             Console.WriteLine("잘못된 입력입니다");
                             Thread.Sleep(1000);
                             Console.Clear();
                             return false;
                         }
-                        else if(InvenList[exitNumb-1].InvenE == "E")
+                        else if(exitNumb >=1 && InvenEquip[exitNumb-1] == "E")
                         {
-                            InvenList[exitNumb - 1].changeE(null);
+                            InvenEquip[exitNumb-1] = null;
+                            if (InvenList[exitNumb-1].InvenType == 'D')
+                            {
+                                typeD_count--;
+                            }
+                            else if (InvenList[exitNumb-1].InvenType == 'W')
+                            {
+                                typeW_count--;
+                            }
+
                         }
-                        else if(exitNumb >0 && exitNumb <=dataMax)
+                        else if(exitNumb >= 1 && InvenEquip[exitNumb - 1] == null)
                         {
-                            InvenList[exitNumb - 1].changeE("E");
+                            if(InvenList[exitNumb - 1].InvenType == 'D')
+                            {
+                                if(typeD_count == 1)
+                                {
+                                    Console.WriteLine("1개의 갑옷만 장착하실 수 있습니다");
+                                    Thread.Sleep(1000);
+                                }
+                                else
+                                {
+                                    InvenEquip[exitNumb - 1] = "E";
+                                    typeD_count++;
+                                }     
+                            }
+                            else if(InvenList[exitNumb - 1].InvenType == 'W')
+                            {
+                                if(typeW_count == 1)
+                                {
+                                    Console.WriteLine("1개의 무기만 장착하실 수 있습니다");
+                                    Thread.Sleep(1000);
+                                }
+                                else
+                                {
+                                    InvenEquip[exitNumb - 1] = "E";
+                                    typeW_count++;
+                                } 
+                            }
                         }
                         else
                         {
@@ -442,49 +484,52 @@ namespace textrpg
         {
             public int ItemMax = 6;
             public int HaveGold;
+            public bool[] Purchase = new bool[100];
+            
             public ItemStore()
             {
-              
+                Purchase[0] = true;
+                Purchase[1] = false;
+                Purchase[2] = false;
+                Purchase[3] = true;
+                Purchase[4] = false;
+                Purchase[5] = false;
+
             }
 
             public struct Store_Struct
             {
                 public string ItemName;
+                public char ItemType;
                 public float ItemAtt;
                 public float ItemDef;
                 public float ItemHea;
                 public string ItemInfo;
                 public int ItemGold;
                 public char ItemGoldCurrency;
-                public bool Purchased;
 
-                public void changePurchased(bool purchase)
-                {
-                    Purchased = purchase;
-                }
-
-                public Store_Struct(string a, float b, float c, float d, string e, int f, char g, bool h)
+                public Store_Struct(string a, char b, float c, float d, float e, string f, int g, char h)
                 {
                     ItemName =a;
-                    ItemAtt=b;
-                    ItemDef=c;
-                    ItemHea=d;
-                    ItemInfo=e;
-                    ItemGold=f;
-                    ItemGoldCurrency=g;
-                    Purchased=h;
-            }
+                    ItemType = b;
+                    ItemAtt=c;
+                    ItemDef=d;
+                    ItemHea=e;
+                    ItemInfo=f;
+                    ItemGold=g;
+                    ItemGoldCurrency=h;
+                }
 
             }
 
             public List<Store_Struct> StoreList = new List<Store_Struct>
             {
-                new Store_Struct { ItemName = "수련자 갑옷", ItemAtt= 0, ItemDef = 5f, ItemHea=0, ItemInfo="수련에 도움을 주는 갑옷입니다.", ItemGold=1000, ItemGoldCurrency='G', Purchased =false },
-                new Store_Struct { ItemName = "무쇠 갑옷", ItemAtt= 0, ItemDef =9f, ItemHea=0, ItemInfo="무쇠로 만들어진 튼튼한 갑옷입니다.", ItemGold=2000, ItemGoldCurrency='G', Purchased =false },
-                new Store_Struct { ItemName = "스파르타의 갑옷", ItemAtt= 0, ItemDef =15f, ItemHea=0, ItemInfo="스파르타의 전사들이 사용했다는 전설의 갑옷입니다.", ItemGold=3500, ItemGoldCurrency='G', Purchased =true },
-                new Store_Struct { ItemName = "낡은 검", ItemAtt= 2f, ItemDef =0, ItemHea=0, ItemInfo="쉽게 볼 수 있는 낡은 검 입니다.", ItemGold=600, ItemGoldCurrency='G', Purchased =false },
-                new Store_Struct { ItemName = "청동 도끼", ItemAtt= 5f, ItemDef =0, ItemHea=0, ItemInfo="어디선가 사용됐던거 같은 도끼입니다.", ItemGold=2000, ItemGoldCurrency='G', Purchased =false },
-                new Store_Struct { ItemName = "스파르타의 창", ItemAtt= 7f, ItemDef =0, ItemHea=0, ItemInfo="스파르타의 전사들이 사용했다는 전설의 창입니다", ItemGold=3500, ItemGoldCurrency='G', Purchased =true }
+                new Store_Struct { ItemName = "수련자 갑옷",ItemType='D', ItemAtt= 0, ItemDef = 5f, ItemHea=0, ItemInfo="수련에 도움을 주는 갑옷입니다.", ItemGold=1000, ItemGoldCurrency='G'},
+                new Store_Struct { ItemName = "무쇠 갑옷", ItemType='D',ItemAtt= 0, ItemDef =9f, ItemHea=0, ItemInfo="무쇠로 만들어진 튼튼한 갑옷입니다.", ItemGold=2000, ItemGoldCurrency='G'},
+                new Store_Struct { ItemName = "스파르타의 갑옷",ItemType='D', ItemAtt= 0, ItemDef =15f, ItemHea=0, ItemInfo="스파르타의 전사들이 사용했다는 전설의 갑옷입니다.", ItemGold=3500, ItemGoldCurrency='G'},
+                new Store_Struct { ItemName = "낡은 검", ItemType='W',ItemAtt= 2f, ItemDef =0, ItemHea=0, ItemInfo="쉽게 볼 수 있는 낡은 검 입니다.", ItemGold=600, ItemGoldCurrency='G'},
+                new Store_Struct { ItemName = "청동 도끼", ItemType='W',ItemAtt= 5f, ItemDef =0, ItemHea=0, ItemInfo="어디선가 사용됐던거 같은 도끼입니다.", ItemGold=2000, ItemGoldCurrency='G' },
+                new Store_Struct { ItemName = "스파르타의 창",ItemType='W', ItemAtt= 7f, ItemDef =0, ItemHea=0, ItemInfo="스파르타의 전사들이 사용했다는 전설의 창입니다", ItemGold=3500, ItemGoldCurrency='G' }
             };
             
 
@@ -541,7 +586,7 @@ namespace textrpg
                         Console.Write("");
                     }
 
-                    if (StoreList[i].Purchased ==true)
+                    if (Purchase[i] ==true)
                     {
                         Console.WriteLine($" {StoreList[i].ItemInfo}\t| \t 구매완료");
                     }
@@ -614,7 +659,7 @@ namespace textrpg
                         Console.Write("");
                     }
 
-                    if (StoreList[i].Purchased == true)
+                    if (Purchase[i] == true)
                     {
                         Console.WriteLine($" {StoreList[i].ItemInfo}\t| \t 구매완료");
                     }
@@ -670,7 +715,7 @@ namespace textrpg
                     }
                     else if(numb >0 && numb <= ItemMax)
                     {
-                        if (StoreList[numb-1].Purchased == true)
+                        if (Purchase[numb-1] == true)
                         {
                             Console.WriteLine("이미 구매한 아이템입니다");
                             Thread.Sleep(1000);
@@ -680,7 +725,7 @@ namespace textrpg
                         else if(gold - StoreList[numb-1].ItemGold >= 0)
                         {
                             HaveGold = gold - StoreList[numb - 1].ItemGold;
-                            StoreList[numb - 1].changePurchased(true);
+                            Purchase[numb - 1]=true;
                             Console.WriteLine("구매를 완료했습니다");
                             Thread.Sleep(1000);
                             Console.Clear();
@@ -724,11 +769,11 @@ namespace textrpg
                     }
                     else if (numb > 0 && numb <= ItemMax)
                     {
-                        if (StoreList[numb - 1].Purchased == true)
+                        if (Purchase[numb - 1]==true)
                         {
                             Console.WriteLine($"판매 가격은 구매 가격의 85%인 {StoreList[numb-1].ItemGold * 85/100}G입니다");
                             HaveGold = gold + StoreList[numb - 1].ItemGold * 85 / 100;
-                            StoreList[numb - 1].changePurchased(false);
+                            Purchase[numb - 1] = false;
                             Thread.Sleep(1000);
                             Console.Clear();
                             return numb;
@@ -762,6 +807,15 @@ namespace textrpg
         public class Dungeon : Character
         {
             public int stage_level = 0;
+            public string level;
+            public float currentHP;
+            public float lastHP;
+            public int currentGold;
+            public int lastGold;
+            public int currentlevel;
+            public float currentAtt;
+            public float currentDef;
+
             public Dungeon()
             {
                
@@ -807,7 +861,6 @@ namespace textrpg
             {
                 float recoDef=0;
                 int resultGold=0;
-                string level = null;
 
                 if(number == 1)
                 {
@@ -839,13 +892,36 @@ namespace textrpg
                 maxValue = StructInstance.attack * 2;
                 float extra = (float)(minValue + (maxValue - minValue) * rand.NextDouble());
                 int goldplus = (int)(resultGold + resultGold * extra/100);
-                float currentHP = StructInstance.health;
-                float lastHP = StructInstance.health - damage;
-                int currentGold = StructInstance.gold;
-                int lastGold = StructInstance.gold + goldplus;
-                int currentlevel = StructInstance.level;
+                currentHP = StructInstance.health;
+                lastHP = StructInstance.health - damage;
+                StructInstance.health = lastHP;
+                currentGold = StructInstance.gold;
+                lastGold = StructInstance.gold + goldplus;
+                currentlevel = StructInstance.level;
+                currentAtt = StructInstance.attack;
+                currentDef = StructInstance.defense;
 
-                if (lastHP > 0)
+                if(StructInstance.health >0)
+                {
+                    StructInstance.attack += 0.5f;
+                    StructInstance.defense++;
+                    StructInstance.health = lastHP;
+                    StructInstance.gold = lastGold;
+                    StructInstance.level++;
+                }
+                else
+                {
+                    StructInstance.health = 0;
+                }
+                
+
+
+            }
+
+            public void DunResultDisplay()
+            {
+
+                if (StructInstance.health > 0)
                 {
                     Console.WriteLine("던전 클리어");
                     Console.WriteLine($"축하합니다!!\n{level} 던전을 클리어 하였습니다\n");
@@ -854,19 +930,15 @@ namespace textrpg
                     Console.WriteLine($"Gold {currentGold}G -> {lastGold}G\n");
 
                     Console.WriteLine("[레벨업]");
-                    Console.WriteLine($"level {currentlevel} -> {currentlevel + 1}");
-                    Console.WriteLine($"공격력 {StructInstance.attack} -> {StructInstance.attack + 0.5}");
-                    Console.WriteLine($"공격력 {StructInstance.defense} -> {StructInstance.defense + 1}");
+                    Console.WriteLine($"level {currentlevel} -> {currentlevel+1}");
+                    Console.WriteLine($"공격력 {currentAtt} -> {currentAtt+0.5}");
+                    Console.WriteLine($"방어력 {currentDef} -> {currentDef+1}");
                     Console.WriteLine($"체력 {lastHP} -> {lastHP}\n");
 
                     Console.WriteLine("0. 나가기\n");
                     Console.WriteLine("원하시는 행동을 입력해주세요");
 
-                    StructInstance.attack += 0.5f;
-                    StructInstance.defense++;
-                    StructInstance.health = lastHP;
-                    StructInstance.gold = lastGold;
-                    StructInstance.level++;
+                    
 
                 }
                 else
@@ -879,9 +951,7 @@ namespace textrpg
                     Console.WriteLine($"Gold {currentGold}G -> {currentGold}G\n");
                     Console.WriteLine("0. 나가기\n");
                     Console.WriteLine("원하시는 행동을 입력해주세요");
-                    StructInstance.health = 0;
                 }
-
             }
 
             public int DunResultSelect()
@@ -1148,6 +1218,7 @@ namespace textrpg
                             newDun.DunResult(selection);
                             while(selection != 0)
                             {
+                                newDun.DunResultDisplay();
                                 selection = newDun.DunResultSelect();
                             }
                             newDun.HaveGold = newDun.StructInstance.gold;
@@ -1179,11 +1250,11 @@ namespace textrpg
                         {
                             int gold1 = newcharacter.StructInstance.gold;
                             newcharacter.StructInstance.gold = gold1 - 500;
-                            newcharacter.StructInstance.health = newcharacter.maxHP;
                             while(true)
                             {
                                 newrest.restOK(newcharacter.StructInstance.health, newcharacter.maxHP);
                                 int numblast = newrest.restAnother();
+                                newcharacter.StructInstance.health = newcharacter.maxHP;
                                 if(numblast == 0)
                                 {
                                     break;
