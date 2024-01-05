@@ -4,16 +4,18 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
-using System.Reflection.Emit;
+using System.Text.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace textrpg
 {
     internal class Program
     {
         
-        class Start
+        class Start //시작화면
         {
-            public void StartInfo()//게임 시작 화면
+            public void StartInfo()//게임 시작 화면 UI
             {
                 Console.WriteLine("스파르타 마을에 오신 여러분 환영합니다");
                 Console.WriteLine("이곳에서 던전으로 들어가기 전 활동을 할 수 있습니다\n");
@@ -49,14 +51,14 @@ namespace textrpg
         }
 
         [Serializable]
-        public class Character : Inventory
+        public class Character : Inventory//캐릭터 클래스, 인벤토리 클래스 상속
         {
-            public float attack_extra=0f;
-            public float defense_extra=0f;
-            public float health_extra=0;
+            public float attack_extra=0f; //장착 물품 추가 스탯
+            public float defense_extra=0f; //장착 물품 추가 스탯
+            public float health_extra=0; //장착 물품 추가 스탯
             public float maxHP = 100;
 
-            public struct Character_struct
+            public struct Character_struct//캐릭터 스탯 구조체
             {
                 public int level;
                 public string name;
@@ -69,23 +71,23 @@ namespace textrpg
 
             public Character_struct StructInstance;
 
-            public Character()
+            public Character()//캐릭터 스탯 초기 입력
             {
               
                 StructInstance = new Character_struct();
                 StructInstance.level = 01;
                 StructInstance.name = "Chad";
                 StructInstance.job = "전사";
-                attack_extra = InvenAtt_extra;
+                attack_extra = 2;
                 StructInstance.attack = 10 + attack_extra;
-                defense_extra = InvenDef_extra;
+                defense_extra = 5;
                 StructInstance.defense = 5 + defense_extra;
-                health_extra = InvenHea_extra;
+                health_extra = 0;
                 StructInstance.health = 100 + health_extra;
                 StructInstance.gold = 1500;
             }
 
-            public void Update()
+            public void Update() //캐릭터 장착품 추가 스탯 체크
             {
                 float currentHP = StructInstance.health;
                 float currentHP_Ex = health_extra;
@@ -116,7 +118,7 @@ namespace textrpg
             }
 
 
-            public void CharacterDisplay()
+            public void CharacterDisplay() //캐릭터 상태보기 창 UI
             {
                 Console.WriteLine("상태 보기");
                 Console.WriteLine("캐릭터의 정보가 표시 됩니다\n");
@@ -132,7 +134,7 @@ namespace textrpg
             }
 
 
-            public bool Exit()
+            public bool Exit() //캐릭터 상태보기 창 행동 입력
             {
                 int exitNumb = 5;
                 
@@ -161,16 +163,13 @@ namespace textrpg
 
         }
 
-        public class Inventory : ItemStore
+        public class Inventory : ItemStore // 이벤토리 클래스, 상점 클래스 상속
         {
-            public float InvenAtt_extra = 0;
-            public float InvenDef_extra = 0;
-            public float InvenHea_extra = 0;
-            public int dataMax = 0;
-            public int typeD_count = 0;
-            public int typeW_count = 0;
+            public int dataMax = 0; //보유한 아이템 최대 개수
+            public int typeD_count = 0;//갑옷 타입 장착 수
+            public int typeW_count = 0;//무기 타입 장착 수
             public string[] InvenEquip= new string[50];
-            public struct Inven_Struct
+            public struct Inven_Struct //인벤토리 구조체
             {
                 public string InvenName;
                 public char InvenType;
@@ -192,14 +191,15 @@ namespace textrpg
 
             }
 
-            public List<Inven_Struct> InvenList = new List<Inven_Struct>();
+            public List<Inven_Struct> InvenList = new List<Inven_Struct>();// list 배열로 가변적 구조체 배열 선언
+            
 
             public Inventory()//기본 생성자
             {
                 
             }
 
-            public void InvenInitial()
+            public void InvenInitial() // 초기 구매된 아이템 입력
             {
                 for (int i = 0; i < ItemMax; i++)
                 {
@@ -212,14 +212,14 @@ namespace textrpg
                 }
             }
 
-            public void AddLast(int numb)
+            public void AddLast(int numb)// 구매된 아이템 추가
             {
                 InvenList.Add(new Inven_Struct(StoreList[numb-1].ItemName, StoreList[numb-1].ItemType, StoreList[numb - 1].ItemAtt, StoreList[numb - 1].ItemDef, StoreList[numb - 1].ItemHea, StoreList[numb - 1].ItemInfo));
                 dataMax++;
                 InvenEquip[dataMax - 1] = null;
             }
 
-            public void MinusLast(int numb)
+            public void MinusLast(int numb)//판매된 아이템 추가
             {
                 int check = 0;
                 for(int i=0; i<dataMax; i++)
@@ -241,7 +241,7 @@ namespace textrpg
                 dataMax--;
             }
 
-            public void InvenDisplay()
+            public void InvenDisplay() //인벤토리 UI
             {
                 Console.WriteLine("인벤토리");
                 Console.WriteLine("보유 중인 아이템을 관리할 수 있습니다\n");
@@ -305,7 +305,7 @@ namespace textrpg
 
             }
 
-            public void ItemDisplay(int a)
+            public void ItemDisplay(int a) //인벤토리 장착 선택 UI
             {
                 Console.WriteLine("인벤토리");
                 Console.WriteLine("보유 중인 아이템을 관리할 수 있습니다\n");
@@ -366,7 +366,7 @@ namespace textrpg
             }
 
 
-            public int InvenSelect()
+            public int InvenSelect()//인벤토리 초기 선택
             {
                 int exitNumb=9999;
 
@@ -398,7 +398,7 @@ namespace textrpg
 
             }
 
-            public bool InvenSelect(int a)
+            public bool InvenSelect(int a)//인벤토리 장착 관리창 선택
             {
                 int exitNumb=9999;
 
@@ -480,13 +480,13 @@ namespace textrpg
         }
 
 
-        public class ItemStore
+        public class ItemStore //상점 클래스
         {
-            public int ItemMax = 6;
-            public int HaveGold;
-            public bool[] Purchase = new bool[100];
+            public int ItemMax = 6; //아이템 최대 개수
+            public int HaveGold; //보유 골드
+            public bool[] Purchase = new bool[100]; //구매여부 표시 변수
             
-            public ItemStore()
+            public ItemStore()//초기 구매여부 입력
             {
                 Purchase[0] = true;
                 Purchase[1] = false;
@@ -497,7 +497,7 @@ namespace textrpg
 
             }
 
-            public struct Store_Struct
+            public struct Store_Struct //상점 구조체
             {
                 public string ItemName;
                 public char ItemType;
@@ -522,7 +522,7 @@ namespace textrpg
 
             }
 
-            public List<Store_Struct> StoreList = new List<Store_Struct>
+            public List<Store_Struct> StoreList = new List<Store_Struct>//상점 물품 입력
             {
                 new Store_Struct { ItemName = "수련자 갑옷",ItemType='D', ItemAtt= 0, ItemDef = 5f, ItemHea=0, ItemInfo="수련에 도움을 주는 갑옷입니다.", ItemGold=1000, ItemGoldCurrency='G'},
                 new Store_Struct { ItemName = "무쇠 갑옷", ItemType='D',ItemAtt= 0, ItemDef =9f, ItemHea=0, ItemInfo="무쇠로 만들어진 튼튼한 갑옷입니다.", ItemGold=2000, ItemGoldCurrency='G'},
@@ -543,6 +543,7 @@ namespace textrpg
                 Console.WriteLine($"{gold} G\n");
                 Console.WriteLine("[아이템 목록]");
 
+                
                 for (int i = 0; i < ItemMax; i++)
                 {
 
@@ -756,7 +757,7 @@ namespace textrpg
                 }
             }
 
-            public int Storesell(int gold)
+            public int Storesell(int gold)//아이템 판매 화면 선택
             {
                 string select = Console.ReadLine();
                 int numb;
@@ -804,7 +805,7 @@ namespace textrpg
             }
         }
 
-        public class Dungeon : Character
+        public class Dungeon : Character //던전 클래스, 캐릭터 클래스 상속
         {
             public int stage_level = 0;
             public string level;
@@ -821,7 +822,7 @@ namespace textrpg
                
             }
 
-            public void DunDisplay()
+            public void DunDisplay() // 던전 UI
             {
                 Console.WriteLine("던전 입장");
                 Console.WriteLine("이곳에서 던전으로 들어가기 전 활동을 할 수 있습니다\n");
@@ -833,7 +834,7 @@ namespace textrpg
 
             }
 
-            public int DunPlaySelect()
+            public int DunPlaySelect() //난이도 선택
             {
                 string select = Console.ReadLine();
                 int numb;
@@ -857,7 +858,7 @@ namespace textrpg
                 }
             }
 
-            public void DunResult(int number)
+            public void DunResult(int number) //던전 입장 후 수치 변화 계산
             {
                 float recoDef=0;
                 int resultGold=0;
@@ -918,7 +919,7 @@ namespace textrpg
 
             }
 
-            public void DunResultDisplay()
+            public void DunResultDisplay()//던전 결과 표시
             {
 
                 if (StructInstance.health > 0)
@@ -954,7 +955,7 @@ namespace textrpg
                 }
             }
 
-            public int DunResultSelect()
+            public int DunResultSelect() //던전 결과 화면 내 행동 선택지
             {
                 string select = Console.ReadLine();
                 int numb;
@@ -979,7 +980,7 @@ namespace textrpg
             }
         }
 
-        public class Rest : Character
+        public class Rest// 휴식 클래스
         {
             public Rest()
             {
@@ -1081,6 +1082,17 @@ namespace textrpg
             newcharacter.InvenInitial();
 
 
+            //Json관련 내용
+            /*
+            string filePath = "example.json";
+            string json = File.ReadAllText(filePath);
+            JsonDocument doc = JsonDocument.Parse(json);
+            string jsontext = "{	\"teamname\": \"My Team\", \"etc\": \"master group\",	\"members\": [{		\"name\": \"Mad Dog\",		\"age\": 36,		\"job\": \"Engineer\",		\"sex\": \"male\",	}, {		\"name\": \"Angry Bird\",		\"age\": 30,		\"job\": \"self-employment\",		\"sex\": \"female\",	}]}";
+            newcharacter = JsonConvert.DeserializeObject<Character>(jsontext);
+            */
+
+
+
             bool isPlaying = true;
             bool exit = false;
             int selection;
@@ -1090,10 +1102,10 @@ namespace textrpg
 
             while (isPlaying)
             {
-                newS.StartInfo();
-                Firstselection = newS.SelectWay();
+                newS.StartInfo();//초기화면 UI
+                Firstselection = newS.SelectWay();// 초기화면 선택
 
-                if (Firstselection == 1)
+                if (Firstselection == 1)//상태 보기
                 {
                     while (exit == false)
                     {
@@ -1102,7 +1114,7 @@ namespace textrpg
                     }
                     exit = false;
                 }
-                else if(Firstselection ==2)
+                else if(Firstselection ==2)//인벤토리
                 {
                     while (exit == false)
                     {
@@ -1127,7 +1139,7 @@ namespace textrpg
 
                     }
                 }
-                else if(Firstselection ==3)
+                else if(Firstselection ==3)//상점
                 {
                     while(exit == false)
                     {
@@ -1195,7 +1207,7 @@ namespace textrpg
                         }
                     }
                 }
-                else if(Firstselection==4)
+                else if(Firstselection==4)//던전 입장
                 {
                     while(exit == false)
                     {
@@ -1235,7 +1247,7 @@ namespace textrpg
                         }
                     }
                 }
-                else if(Firstselection == 5)
+                else if(Firstselection == 5)//휴식
                 {
                     while(exit == false)
                     {
@@ -1269,6 +1281,10 @@ namespace textrpg
                 }
 
                 //데이터 저장
+                /*
+                string json2 = JsonSerializer.Serialize(newcharacter);
+                File.WriteAllText(filePath, json2);
+                */
             }
             
         }
