@@ -600,6 +600,7 @@ namespace textrpg
                 Console.WriteLine("");
                 Console.WriteLine("1. 아이템 구매");
                 Console.WriteLine("2. 아이템 판매");
+                Console.WriteLine("3. 아이템 추가하기");
                 Console.WriteLine("0. 나가기\n");
                 Console.WriteLine("원하시는 행동을 입려해주세요");
             }
@@ -673,6 +674,182 @@ namespace textrpg
                 Console.WriteLine("");
                 Console.WriteLine("0. 나가기\n");
                 Console.WriteLine("원하시는 행동을 입려해주세요");
+            }
+
+            public void StoreDisplayAdd(int gold)//아이템 리스트 추가
+            {
+                Console.WriteLine("상점");
+                Console.WriteLine("필요한 아이템을 얻을 수 있는 상점입니다.\n");
+                Console.WriteLine("[보유 골드]");
+                Console.WriteLine($"{gold} G\n");
+                Console.WriteLine("[아이템 목록]");
+
+                for (int i = 0; i < ItemMax; i++)
+                {
+                    if (string.IsNullOrEmpty(StoreList[i].ItemName))
+                    {
+                        break;
+                    }
+
+                    Console.Write($"-{StoreList[i].ItemName}\t|");
+                    if (StoreList[i].ItemAtt > 0)
+                    {
+                        Console.Write($" 공격력 +{StoreList[i].ItemAtt}|");
+                    }
+                    else if (StoreList[i].ItemAtt < 0)
+                    {
+                        Console.Write($" 공격력 {StoreList[i].ItemAtt}|");
+                    }
+                    else
+                    {
+                        Console.Write("");
+                    }
+
+                    if (StoreList[i].ItemDef > 0)
+                    {
+                        Console.Write($"방어력 +{StoreList[i].ItemDef}|");
+                    }
+                    else if (StoreList[i].ItemDef < 0)
+                    {
+                        Console.Write($"방어력 {StoreList[i].ItemDef}|");
+                    }
+                    else
+                    {
+                        Console.Write("");
+                    }
+
+                    if (StoreList[i].ItemHea > 0)
+                    {
+                        Console.Write($"체력 +{StoreList[i].ItemHea}|");
+                    }
+                    else if (StoreList[i].ItemHea < 0)
+                    {
+                        Console.Write($"체력 {StoreList[i].ItemHea}|");
+                    }
+                    else
+                    {
+                        Console.Write("");
+                    }
+
+                    if (Purchase[i] == true)
+                    {
+                        Console.WriteLine($" {StoreList[i].ItemInfo}\t| \t 구매완료");
+                    }
+                    else
+                    {
+                        Console.WriteLine($" {StoreList[i].ItemInfo}\t| {StoreList[i].ItemGold} {StoreList[i].ItemGoldCurrency}");
+                    }
+
+                }
+                Console.WriteLine("");
+                Console.WriteLine("추가하고 싶은 아이템 이름을 입력하세요");
+                string name = Console.ReadLine();
+
+
+                Console.WriteLine("추가하고 싶은 아이템 타입 (D or W)를 입력하세요");
+                string type = Console.ReadLine();
+                char typeOne;
+                while (true)
+                {
+                    if (char.TryParse(type, out typeOne))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("잘못 입력하셨습니다");
+                        Console.WriteLine("추가하고 싶은 아이템 타입 (D or W)를 입력하세요");
+                        type = Console.ReadLine();
+                    }
+                }
+
+
+                Console.WriteLine("추가하고 싶은 아이템의 공격력(숫자)을 입력하세요");
+                string att = Console.ReadLine();
+                float attOne;
+
+                while(true)
+                {
+                    if(float.TryParse(att, out attOne))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("잘못 입력하셨습니다");
+                        Console.WriteLine("추가하고 싶은 아이템의 공격력(숫자)을 입력하세요");
+                        att = Console.ReadLine();
+                    }
+                }
+
+                Console.WriteLine("추가하고 싶은 아이템의 방어력(숫자)을 입력하세요");
+                string def = Console.ReadLine();
+                float defOne;
+
+                while(true)
+                {
+                    if(float.TryParse(def, out defOne))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("잘못 입력하셨습니다");
+                        Console.WriteLine("추가하고 싶은 아이템의 방어력(숫자)을 입력하세요");
+                        def = Console.ReadLine();
+                    }
+                }
+
+
+                Console.WriteLine("추가하고 싶은 아이템의 체력(숫자)을 입력하세요");
+                string hea = Console.ReadLine();
+                float heaOne;
+
+                while(true)
+                {
+                    if(float.TryParse(hea, out heaOne))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("잘못 입력하셨습니다");
+                        Console.WriteLine("추가하고 싶은 아이템의 체력(숫자)을 입력하세요");
+                        hea = Console.ReadLine();
+                    }
+                }
+
+
+                Console.WriteLine("추가하고 싶은 아이템 정보를 입력하세요");
+                string info = Console.ReadLine();
+                
+
+                Console.WriteLine("추가하고 싶은 아이템 가격(숫자)을 입력하세요");
+                string g = Console.ReadLine();
+                int price;
+
+                while(true)
+                {
+                    if(int.TryParse(g, out price))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("잘못 입력하셨습니다");
+                        Console.WriteLine("추가하고 싶은 아이템 가격(숫자)을 입력하세요");
+                        g = Console.ReadLine();
+                    }
+                }
+
+                char gc = 'G';
+
+                StoreList.Add(new Store_Struct(name, typeOne, attOne, defOne, heaOne, info, price, gc));
+                Purchase[ItemMax] = false;
+                ItemMax++;
+
+                Console.WriteLine("\n아이템이 추가되었습니다");
+                Console.ReadLine();
             }
 
             public int Storeselect()//아이템 리스트 화면 내 선택지
@@ -1121,7 +1298,7 @@ namespace textrpg
                         newcharacter.InvenDisplay();
                         selection = newcharacter.InvenSelect();
 
-                        if(selection == 1)
+                        if(selection == 1)//장착 관리
                         {
                             bool instance = false;
                             while(instance == false)
@@ -1147,7 +1324,7 @@ namespace textrpg
                         newcharacter.StoreDisplay(goldInstance);
                         selection = newcharacter.Storeselect();
 
-                        if(selection == 1)
+                        if(selection == 1)//아이템 구매
                         {
                             while(selection != 0)
                             {
@@ -1173,7 +1350,7 @@ namespace textrpg
                             newcharacter.StructInstance.gold = goldInstance;
 
                         }
-                        else if(selection == 2)
+                        else if(selection == 2)//아이템 판매
                         {
                             while (selection != 0)
                             {
@@ -1200,6 +1377,10 @@ namespace textrpg
                             newcharacter.StructInstance.gold = goldInstance;
                             newcharacter.Update();
 
+                        }
+                        else if(selection == 3)//아이템 리스트 추가
+                        {
+                            newcharacter.StoreDisplayAdd(goldInstance);
                         }
                         else if(selection == 0)
                         {
