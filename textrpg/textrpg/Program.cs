@@ -192,6 +192,7 @@ namespace textrpg
             }
 
             public List<Inven_Struct> InvenList = new List<Inven_Struct>();// list 배열로 가변적 구조체 배열 선언
+            // 구조체가 아닌 class를 list 배열로 선언하면 내부 변수에 접근할 수 있기에 염두하자
             
 
             public Inventory()//기본 생성자
