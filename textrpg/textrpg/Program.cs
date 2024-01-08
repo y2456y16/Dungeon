@@ -19,7 +19,7 @@ namespace textrpg
             {
                 Console.WriteLine("스파르타 마을에 오신 여러분 환영합니다");
                 Console.WriteLine("이곳에서 던전으로 들어가기 전 활동을 할 수 있습니다\n");
-                Console.WriteLine("1. 상태 보기\n2. 인벤토리\n3. 상점\n4. 던전 입장\n5. 휴식하기\n");
+                Console.WriteLine("1. 상태 보기\n2. 인벤토리\n3. 상점\n4. 던전 입장\n5. 휴식하기\n\n0.Reset\n");
                 Console.WriteLine("원하시는 행동을 입력해주세요");
             }
 
@@ -33,7 +33,7 @@ namespace textrpg
 
                     if(int.TryParse(select1, out select))
                     {
-                        if(select == 1 || select ==2 || select ==3 || select ==4 || select ==5)
+                        if(select == 1 || select ==2 || select ==3 || select ==4 || select ==5 || select ==0)
                         {
                             selecting = false;
                         }
@@ -68,6 +68,8 @@ namespace textrpg
                 public float health;
                 public int gold;
             }
+
+            
 
             public Character_struct StructInstance;
 
@@ -200,6 +202,7 @@ namespace textrpg
                 
             }
 
+            
             public void InvenInitial() // 초기 구매된 아이템 입력
             {
                 for (int i = 0; i < ItemMax; i++)
@@ -255,7 +258,8 @@ namespace textrpg
                         break;
                     }
 
-                    Console.Write($"-[{InvenEquip[i]}]{InvenList[i].InvenName}\t|");
+                    Console.Write(PadRightForMixedText($"-[{InvenEquip[i]}]{InvenList[i].InvenName}", 17));
+                    Console.Write(" | ");
                     if (InvenList[i].InvenAtt >0)
                     {
                         Console.Write($"공격력 +{InvenList[i].InvenAtt}|");
@@ -319,7 +323,8 @@ namespace textrpg
                         break;
                     }
 
-                    Console.Write($"-{i + 1} [{InvenEquip[i]}]{InvenList[i].InvenName}\t|");
+                    Console.Write(PadRightForMixedText($"-{i + 1} [{InvenEquip[i]}]{InvenList[i].InvenName}",17));
+                    Console.Write(" | ");
                     if (InvenList[i].InvenAtt > 0)
                     {
                         Console.Write($"공격력 +{InvenList[i].InvenAtt}|");
@@ -532,7 +537,29 @@ namespace textrpg
                 new Store_Struct { ItemName = "청동 도끼", ItemType='W',ItemAtt= 5f, ItemDef =0, ItemHea=0, ItemInfo="어디선가 사용됐던거 같은 도끼입니다.", ItemGold=2000, ItemGoldCurrency='G' },
                 new Store_Struct { ItemName = "스파르타의 창",ItemType='W', ItemAtt= 7f, ItemDef =0, ItemHea=0, ItemInfo="스파르타의 전사들이 사용했다는 전설의 창입니다", ItemGold=3500, ItemGoldCurrency='G' }
             };
-            
+
+            public static int GetPrintableLength(string str)
+            {
+                int length = 0;
+                foreach (char c in str)
+                {
+                    if (char.GetUnicodeCategory(c) == System.Globalization.UnicodeCategory.OtherLetter)
+                    {
+                        length += 2;
+                    }
+                    else
+                    {
+                        length += 1;
+                    }
+                }
+                return length;
+            }
+            public static string PadRightForMixedText(string str, int totalLength)
+            {
+                int currentLength = GetPrintableLength(str);
+                int padding = totalLength - currentLength;
+                return str.PadRight(str.Length + padding);
+            }
 
             public void StoreDisplay(int gold)//첫 상점 화면
             {
@@ -548,14 +575,15 @@ namespace textrpg
                 for (int i = 0; i < ItemMax; i++)
                 {
 
-                    Console.Write($"-{StoreList[i].ItemName}\t|");
+                    Console.Write(PadRightForMixedText($"-{StoreList[i].ItemName}",17));
+                    Console.Write(" | ");
                     if (StoreList[i].ItemAtt > 0)
                     {
-                        Console.Write($" 공격력 +{StoreList[i].ItemAtt}|");
+                        Console.Write($"공격력 +{StoreList[i].ItemAtt}|");
                     }
                     else if (StoreList[i].ItemAtt < 0)
                     {
-                        Console.Write($" 공격력 {StoreList[i].ItemAtt}|");
+                        Console.Write($"공격력 {StoreList[i].ItemAtt}|");
                     }
                     else
                     {
@@ -590,11 +618,13 @@ namespace textrpg
 
                     if (Purchase[i] ==true)
                     {
-                        Console.WriteLine($" {StoreList[i].ItemInfo}\t| \t 구매완료");
+                        Console.Write(PadRightForMixedText($" {StoreList[i].ItemInfo}",50));
+                        Console.WriteLine(" | 구매완료");
                     }
                     else
                     {
-                        Console.WriteLine($" {StoreList[i].ItemInfo}\t| {StoreList[i].ItemGold} {StoreList[i].ItemGoldCurrency}");
+                        Console.Write(PadRightForMixedText($" {StoreList[i].ItemInfo}",50));
+                        Console.WriteLine($" | {StoreList[i].ItemGold} {StoreList[i].ItemGoldCurrency}");
                     }
                     
                 }
@@ -622,14 +652,15 @@ namespace textrpg
                         break;
                     }
 
-                    Console.Write($"-{i+1} {StoreList[i].ItemName}\t|");
+                    Console.Write(PadRightForMixedText($"-{i + 1} {StoreList[i].ItemName}", 17));
+                    Console.Write(" | ");
                     if (StoreList[i].ItemAtt > 0)
                     {
-                        Console.Write($" 공격력 +{StoreList[i].ItemAtt}|");
+                        Console.Write($"공격력 +{StoreList[i].ItemAtt}|");
                     }
                     else if (StoreList[i].ItemAtt < 0)
                     {
-                        Console.Write($" 공격력 {StoreList[i].ItemAtt}|");
+                        Console.Write($"공격력 {StoreList[i].ItemAtt}|");
                     }
                     else
                     {
@@ -664,11 +695,13 @@ namespace textrpg
 
                     if (Purchase[i] == true)
                     {
-                        Console.WriteLine($" {StoreList[i].ItemInfo}\t| \t 구매완료");
+                        Console.Write(PadRightForMixedText($" {StoreList[i].ItemInfo}",50));
+                        Console.WriteLine(" | 구매완료");
                     }
                     else
                     {
-                        Console.WriteLine($" {StoreList[i].ItemInfo}\t| {StoreList[i].ItemGold} {StoreList[i].ItemGoldCurrency}");
+                        Console.Write(PadRightForMixedText($" {StoreList[i].ItemInfo}", 50));
+                        Console.WriteLine($" | {StoreList[i].ItemGold} {StoreList[i].ItemGoldCurrency}");
                     }
 
                 }
@@ -692,14 +725,15 @@ namespace textrpg
                         break;
                     }
 
-                    Console.Write($"-{StoreList[i].ItemName}\t|");
+                    Console.Write(PadRightForMixedText($"-{StoreList[i].ItemName}", 17));
+                    Console.Write(" | ");
                     if (StoreList[i].ItemAtt > 0)
                     {
-                        Console.Write($" 공격력 +{StoreList[i].ItemAtt}|");
+                        Console.Write($"공격력 +{StoreList[i].ItemAtt}|");
                     }
                     else if (StoreList[i].ItemAtt < 0)
                     {
-                        Console.Write($" 공격력 {StoreList[i].ItemAtt}|");
+                        Console.Write($"공격력 {StoreList[i].ItemAtt}|");
                     }
                     else
                     {
@@ -734,11 +768,13 @@ namespace textrpg
 
                     if (Purchase[i] == true)
                     {
-                        Console.WriteLine($" {StoreList[i].ItemInfo}\t| \t 구매완료");
+                        Console.Write(PadRightForMixedText($" {StoreList[i].ItemInfo}", 50));
+                        Console.WriteLine(" | 구매완료");
                     }
                     else
                     {
-                        Console.WriteLine($" {StoreList[i].ItemInfo}\t| {StoreList[i].ItemGold} {StoreList[i].ItemGoldCurrency}");
+                        Console.Write(PadRightForMixedText($" {StoreList[i].ItemInfo}", 50));
+                        Console.WriteLine($" | {StoreList[i].ItemGold} {StoreList[i].ItemGoldCurrency}");
                     }
 
                 }
@@ -1249,7 +1285,7 @@ namespace textrpg
             }
         }
 
-
+        
         static void Main(string[] args)
         {
             Start newS = new Start(); //초기화면 클래스
@@ -1260,15 +1296,12 @@ namespace textrpg
             newcharacter.InvenInitial();
 
 
-            //Json관련 내용
-            /*
+          
+            //Json 저장
             string filePath = "example.json";
             string json = File.ReadAllText(filePath);
-            JsonDocument doc = JsonDocument.Parse(json);
-            string jsontext = "{	\"teamname\": \"My Team\", \"etc\": \"master group\",	\"members\": [{		\"name\": \"Mad Dog\",		\"age\": 36,		\"job\": \"Engineer\",		\"sex\": \"male\",	}, {		\"name\": \"Angry Bird\",		\"age\": 30,		\"job\": \"self-employment\",		\"sex\": \"female\",	}]}";
-            newcharacter = JsonConvert.DeserializeObject<Character>(jsontext);
-            */
-
+            // JSON 문자열로부터 아이템 리스트를 역직렬화
+            newcharacter = JsonConvert.DeserializeObject<Character>(json);
 
 
             bool isPlaying = true;
@@ -1461,12 +1494,14 @@ namespace textrpg
                         }
                     }
                 }
+                else if(Firstselection ==0)
+                {
+                    newcharacter = new Character();
+                }
 
-                //데이터 저장
-                /*
-                string json2 = JsonSerializer.Serialize(newcharacter);
-                File.WriteAllText(filePath, json2);
-                */
+                //Json 데이터 저장
+                json = JsonConvert.SerializeObject(newcharacter, Formatting.Indented);
+                File.WriteAllText(filePath, json); // JSON 문자열을 파일로 저장
             }
             
         }
